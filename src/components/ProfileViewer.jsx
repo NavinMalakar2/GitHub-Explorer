@@ -82,20 +82,22 @@ const fetchData = async (user) => {
 };
 
 return (
-    <div className={`bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8 ${hasContent?'min-h-full': 'h-full flex items-center justify-center'}`}>
+    <div className={`bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8 ${hasContent?'min-h-full': 'min-h-screen flex items-center justify-center'}`}>
         <div className={`max-w-6xl mx-auto ${hasContent ?'':'w-full'}`}>
             <div className="text-center mb-8">
                 <h1 className="text-4xl font-bold text-white mb-2">Github Profile viewer</h1>
                 <p className="text-gray-400"> Explore Github user Profiles And their Repositories</p>
             </div>
             <SearchForm value={username} onChange={(e)=>setUsername(e.target.value)} onSubmit={handleSearch} placeholder="Enter Gituhb Username..." loading={loading}/>
-            <UserSearch 
-  query={username} 
-  onSelectUser={(selectedUser)=>{
-    setUsername(selectedUser);
-    fetchData(selectedUser); // ya handleSearch trigger
-  }}
-/>
+            <div className="w-full max-h-[300px] overflow-y-auto mt-2">
+  <UserSearch 
+    query={username} 
+    onSelectUser={(selectedUser)=>{
+      setUsername(selectedUser);
+      fetchData(selectedUser);
+    }}
+  />
+</div>
             <ErrorMessage message={error}/>
 
 

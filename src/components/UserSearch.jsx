@@ -24,7 +24,7 @@ const UserSearch = ({ query, onSelectUser }) => {
   }, [query]);
 
   return (
-    <div className="mt-6">
+    <div className="mt-2 w-full bg-gray-900 rounded-xl p-2">
       {loading && <p className="text-gray-400 text-center">Searching users...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
