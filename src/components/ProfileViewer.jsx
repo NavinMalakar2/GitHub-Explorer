@@ -1,175 +1,287 @@
 import { useState } from "react";
-import {fetchUserProfile ,fetchUserRepo} from "../services/githubApi"
-import SearchForm from "./SearchForm"
-import ErrorMessage   from "./ErrorMessage"
-import RepoCard from "./RepoCard"
+import { fetchUserProfile, fetchUserRepo } from "../services/githubApi";
+import SearchForm from "./SearchForm";
+import ErrorMessage from "./ErrorMessage";
+import RepoCard from "./RepoCard";
 import UserSearch from "./UserSearch";
-import {formatDate} from "../utils/format"
-import { FaMapMarkedAlt, FaBuilding , FaLink, FaCalendarAlt, FaGithub, FaUsers, FaUserPlus, FaCode, FaFileCode } from "react-icons/fa";
+import { formatDate } from "../utils/format";
+import {
+  FaMapMarkedAlt,
+  FaBuilding,
+  FaLink,
+  FaCalendarAlt,
+  FaGithub,
+  FaUsers,
+  FaUserPlus,
+  FaCode,
+  FaFileCode,
+} from "react-icons/fa";
 
+const ProfileViewer = () => {
+  const [username, setUsername] = useState("");
+  const [profile, setProfile] = useState(null);
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-const ProfileViewer = ()=>{
-    const [username, setUsername] =useState('');
-    const [profile, setProfile] =useState(null);
-    const [repos, setRepos] =useState([]);
-    const [loading ,setLoading] =useState(false)
-    const [error ,setError] =useState(null)
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+    setShowSuggestions(false);
 
+    setLoading(true);
+    setError(null);
+    setProfile(null);
+    setRepos([]);
 
-    const handleSearch = async (e)=>{
-        e.preventDefault();
-        if(!username.trim())return;
-
-        setLoading(true);
-        setError(null);
-        setProfile(null);
-        setRepos([]);
-
-
-        try{
-            const [userData , reposData] = await Promise.all([
-                                                 fetchUserProfile(username),
-                                                    fetchUserRepo(username)
-                                                    ])
-            setProfile(userData);
-            setRepos(reposData);
-
-        }catch (err){
-            setError(err.message);
-        }finally{
-            setLoading(false)
-        }
+    try {
+      const [userData, reposData] = await Promise.all([
+        fetchUserProfile(username),
+        fetchUserRepo(username),
+      ]);
+      setProfile(userData);
+      setRepos(reposData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-// const hasContent = profile || repos.length > 0;
-const hasContent = !!profile || repos.length > 0;
-const stats =[
-    {icon:FaCode ,label:'Repositories' , value :profile?.public_repos ,bgClass : 'from-blue-600/20 to-blue-800/20' , 
-        borderClass :'border-blue-500/30 hover:border-blue-400/50' ,iconClass:"text-blue-400"},
-    {icon:FaUsers ,label:'Followers' , value :profile?.followers ,bgClass : 'from-green-600/20 to-green-800/20' , 
-        borderClass :'border-green-500/30 hover:border-green-400/50' ,iconClass:"text-green-400"},
-    {icon:FaUserPlus ,label:'Following' , value :profile?.following ,bgClass : 'from-purple-600/20 to-purple-800/20' , 
-        borderClass :'border-purple-500/30 hover:border-purple-400/50' ,iconClass:"text-purple-400"},
-    {icon:FaFileCode ,label:'Gists' , value :profile?.public_gists ,bgClass : 'from-orange-600/20 to-orange-800/20' , 
-        borderClass :'border-orange-500/30 hover:border-orange-400/50' ,iconClass:"text-orange-400"},
-      
+  };
+  
+  const hasContent = !!profile || repos.length > 0;
+  const stats = [
+    {
+      icon: FaCode,
+      label: "Repositories",
+      value: profile?.public_repos,
+      bgClass: "from-blue-600/20 to-blue-800/20",
+      borderClass: "border-blue-500/30 hover:border-blue-400/50",
+      iconClass: "text-blue-400",
+    },
+    {
+      icon: FaUsers,
+      label: "Followers",
+      value: profile?.followers,
+      bgClass: "from-green-600/20 to-green-800/20",
+      borderClass: "border-green-500/30 hover:border-green-400/50",
+      iconClass: "text-green-400",
+    },
+    {
+      icon: FaUserPlus,
+      label: "Following",
+      value: profile?.following,
+      bgClass: "from-purple-600/20 to-purple-800/20",
+      borderClass: "border-purple-500/30 hover:border-purple-400/50",
+      iconClass: "text-purple-400",
+    },
+    {
+      icon: FaFileCode,
+      label: "Gists",
+      value: profile?.public_gists,
+      bgClass: "from-orange-600/20 to-orange-800/20",
+      borderClass: "border-orange-500/30 hover:border-orange-400/50",
+      iconClass: "text-orange-400",
+    },
+  ];
 
-] 
+  const infoItems = [
+    {
+      condition: profile?.company,
+      icon: FaBuilding,
+      label: "Company",
+      value: profile?.company,
+      iconClass: "text-blue-400",
+    },
+    {
+      condition: profile?.location,
+      icon: FaMapMarkedAlt,
+      label: "Location",
+      value: profile?.location,
+      iconClass: "text-red-400",
+    },
+    {
+      condition: profile?.blog,
+      icon: FaLink,
+      label: "Website",
+      value: profile?.blog,
+      iconClass: "text-green-400",
+      isLink: true,
+    },
+  ];
 
-const infoItems = [
-    {condition:profile?.company ,icon : FaBuilding, label:'Company',value :profile?.company, iconClass: 'text-blue-400'},
-    {condition:profile?.location ,icon : FaMapMarkedAlt, label:'Location',value :profile?.location, iconClass: 'text-red-400'},
-    {condition:profile?.blog ,icon : FaLink, label:'Website',value :profile?.blog, iconClass: 'text-green-400', isLink:true},
+  return (
+    <div
+      className={`bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8 ${hasContent ? "min-h-full" : "min-h-screen flex items-center justify-center"}`}
+    >
+      <div className={`max-w-6xl mx-auto ${hasContent ? "" : "w-full"}`}>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Github Profile viewer
+          </h1>
+          <p className="text-gray-400">
+            {" "}
+            Explore Github user Profiles And their Repositories
+          </p>
+        </div>
+        <SearchForm
+          value={username}
+          onChange={(e) => {setUsername(e.target.value) ; setShowSuggestions(true);}}
+          onSubmit={handleSearch}
+          placeholder="Enter Gituhb Username..."
+          loading={loading}
+        />
+        {showSuggestions && (
+        <div className="w-full max-h-[300px] overflow-y-auto mt-2">
+          <UserSearch
+            query={username}
+            onSelectUser={(selectedUser) => {
+              setUsername(selectedUser);
+              setShowSuggestions(false);
+            //   fetchData(selectedUser);
+            handleSearch(selectedUser);
+            }}
+          />
+        </div>
+        )}
+        <ErrorMessage message={error} />
 
+        {profile && (
+          <div className="bg-linear-to-br from-gray-800 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden mb-8 border border-gray-700/50 backdrop-blur-sm ">
+            <div className="bg-linear-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 p-6 border-b border-gray-700/50">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-linear-to-red from-blue-500 to-purple-500 rounded-full blur-lg opacity-50"></div>
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.name || profile.login}
+                    className=" relative w-32 h-32 md:w-40 md:h-40 border-4 rounded-full border-gray-700 shadow-xl"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                    {profile.name || profile.login}
+                  </h2>
+                  <p className="text-lg  text-gray-400 mb-3  flex items-center justify-center md:justify-start gap-2">
+                    <FaGithub className=" text-gray-500" />@{profile.login}
+                  </p>
+                  {profile.bio && (
+                    <p className="text-gray-400 text-blue-400 mb-4 max-w-4xl">
+                      {profile.bio}
+                    </p>
+                  )}
+                  <a
+                    href={profile.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-transform hover:scale-105"
+                  >
+                    <FaGithub />
+                    View on Github
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-gray-900/50">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 ">
+                {stats.map(
+                  ({
+                    icon: Icon,
+                    label,
+                    value,
+                    bgClass,
+                    borderClass,
+                    iconClass,
+                  }) => (
+                    <div
+                      className={`bg-linear-to-br ${bgClass} p-4 rounded-xl border ${borderClass} transition-all duration-200 hover:scale-105`}
+                      key={label}
+                    >
+                      <div
+                        className={`flex items-center gap-2 ${iconClass} mb-2`}
+                      >
+                        <Icon className="text-lg" />
+                        <div className="text-gray-400 text-sm font-medium">
+                          {label}
+                        </div>{" "}
+                      </div>
+                      <div className="text-3xl font-bold text-white">
+                        {value}
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
 
-];
-const fetchData = async (user) => {
-  setLoading(true);
-  setError(null);
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-700/50">
+                {infoItems.map(
+                  ({
+                    condition,
+                    icon: Icon,
+                    label,
+                    value,
+                    iconClass,
+                    isLink,
+                  }) =>
+                    condition && (
+                      <div
+                        key={label}
+                        className="flex items-center gap-3 text-gray-300 p-3 rounded-lg bg-gray-800 hover:bg-gray-800 transition-colors"
+                      >
+                        <Icon className={`${iconClass} shrink-0`} />
+                        <div className={isLink ? "flex-1 min-w-0 " : ""}>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            {label}
+                          </div>
+                          {isLink ? (
+                            <a
+                              href={value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:underline font-semibold truncate block"
+                            >
+                              {value}
+                            </a>
+                          ) : (
+                            <div className="font-semibold">{value}</div>
+                          )}
+                        </div>
+                      </div>
+                    ),
+                )}
 
-  try {
-    const [userData, reposData] = await Promise.all([
-      fetchUserProfile(user),
-      fetchUserRepo(user)
-    ]);
+                <div className="flex items-center gap-3 text-gray-300 p-3  rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors">
+                  <FaCalendarAlt className="text-purple-400 shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">
+                      joined
+                    </div>
+                    <div className="font-semibold ">
+                      {formatDate(profile.created_at)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-    setProfile(userData);
-    setRepos(reposData);
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
+        {repos.length > 0 && (
+          <div>
+            <h3 className="text-2xl font-bold text-white mb-4">
+              {" "}
+              Repositories({repos.length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {repos.map((repo) => (
+                <RepoCard key={repo.id} repo={repo} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
-return (
-    <div className={`bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 px-4 py-8 ${hasContent?'min-h-full': 'min-h-screen flex items-center justify-center'}`}>
-        <div className={`max-w-6xl mx-auto ${hasContent ?'':'w-full'}`}>
-            <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-white mb-2">Github Profile viewer</h1>
-                <p className="text-gray-400"> Explore Github user Profiles And their Repositories</p>
-            </div>
-            <SearchForm value={username} onChange={(e)=>setUsername(e.target.value)} onSubmit={handleSearch} placeholder="Enter Gituhb Username..." loading={loading}/>
-            <div className="w-full max-h-[300px] overflow-y-auto mt-2">
-  <UserSearch 
-    query={username} 
-    onSelectUser={(selectedUser)=>{
-      setUsername(selectedUser);
-      fetchData(selectedUser);
-    }}
-  />
-</div>
-            <ErrorMessage message={error}/>
-
-
-            {profile && (
-                <div className="bg-linear-to-br from-gray-800 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden mb-8 border border-gray-700/50 backdrop-blur-sm ">
-                    <div className="bg-linear-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 p-6 border-b border-gray-700/50">
-                        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                           
-                           
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-linear-to-red from-blue-500 to-purple-500 rounded-full blur-lg opacity-50"></div>
-                                <img src={profile.avatar_url} alt={profile.name || profile.login} className=" relative w-32 h-32 md:w-40 md:h-40 border-4 rounded-full border-gray-700 shadow-xl" />
-                            </div>
-                            <div className="flex-1 text-center md:text-left">
-                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">{profile.name || profile.login}</h2>
-                                <p className="text-lg  text-gray-400 mb-3  flex items-center justify-center md:justify-start gap-2"><FaGithub className=" text-gray-500"/>@{profile.login}</p>
-                                {profile.bio && <p className="text-gray-400 text-blue-400 mb-4 max-w-4xl">{profile.bio}</p>}
-                                <a href={profile.html_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-transform hover:scale-105"><FaGithub/>View on Github</a>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    <div className ="p-6 bg-gray-900/50">
-                        <div className ="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 ">
-                            {stats.map(({icon:Icon , label , value , bgClass, borderClass, iconClass})=>(
-                                <div className={`bg-linear-to-br ${bgClass} p-4 rounded-xl border ${borderClass} transition-all duration-200 hover:scale-105`} key={label}>
-                                    <div className={`flex items-center gap-2 ${iconClass} mb-2`}><Icon className="text-lg"/><div className="text-gray-400 text-sm font-medium">{label}</div> </div>
-                                    <div className="text-3xl font-bold text-white">{value}</div>
-                                </div>
-                            ))}
-                        </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-700/50">
-                                {infoItems.map(({condition, icon:Icon, label, value ,iconClass ,isLink})=>condition && (
-                                    <div key={label} className="flex items-center gap-3 text-gray-300 p-3 rounded-lg bg-gray-800 hover:bg-gray-800 transition-colors">
-                                        <Icon className={`${iconClass} shrink-0`}/>
-                                        <div className={isLink?"flex-1 min-w-0 ":""}>
-                                            <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-                                            {isLink ? <a href={value} target="_blank" rel="noopener noreferrer"className="text-blue-400 hover:underline font-semibold truncate block">{value}</a>: <div className ="font-semibold">{value}</div>}
-                                        </div>
-                                    </div>
-                                ))}
-                                
-                                <div className="flex items-center gap-3 text-gray-300 p-3  rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors">
-                                    <FaCalendarAlt className="text-purple-400 shrink-0"/>
-                                    <div>
-                                    <div className="text-xs text-gray-500 uppercase tracking-wide">joined</div>
-                                    <div className="font-semibold ">{formatDate(profile.created_at)}</div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                    </div>
-                </div>
-            )}
-
-            {repos.length>0 && (
-                <div>
-                    <h3 className="text-2xl font-bold text-white mb-4" > Repositories({repos.length})</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {repos.map((repo)=><RepoCard key={repo.id} repo={repo}/>)}
-                    </div>
-                </div>
-            )}
-        </div>
-    </div>
-)
-}
-
-
-
-
-
-export default ProfileViewer
+export default ProfileViewer;
